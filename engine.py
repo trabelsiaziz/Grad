@@ -32,12 +32,10 @@ s --> c ---> f
 
 ds/df = ds/dc * dc/df 
 
-
-
 """
 
+import math 
 import random
-
 
 class Value:
     def __init__(self, value):
@@ -49,7 +47,7 @@ class Value:
         self._backward = lambda : None
             
     def __repr__(self):
-        out = f"Value(data={self.data}, grad={self.grad}, children={self._children})"
+        out = f"Value(data={self.data:.4f}, grad={self.grad:.4f}, children={self._children})"
         return out 
 
     def __add__(self, other):
@@ -57,7 +55,7 @@ class Value:
         out = Value(res)
         out._children.update([self, other])  
         out._op = "+"    
-        
+        out.label = "$"
         def compute_grad(): 
             for child in out._children:
                 child.grad += out.grad
@@ -71,7 +69,8 @@ class Value:
         res = self.data * other.data
         out = Value(res)
         out._op = "*"
-        out._children.update([self, other])    
+        out._children.update([self, other])
+        out.label = "$"    
         def compute_grad(): 
             total_power = 1.0
             for child in out._children:
@@ -84,6 +83,44 @@ class Value:
         out._backward = compute_grad
         return out 
     
+    def __rmul__(self, other):
+        return self * other
+        
+    def tanh(self): 
+        t = (math.exp(2*self.data) - 1)/(math.exp(2*self.data) + 1)
+        out = Value(t)
+        out._children = {self}
+        out._op = "tanh"
+        
+        def _backward():
+            self.grad += (1 - t**2) * out.grad
+        out._backward = _backward
+        
+        return out
+    
+    def __neg__(self):
+        out = self * Value(-1) 
+        return out
+    
+    def __sub__(self, other): 
+        out = self + (-other)
+        return out 
+    
+    
+    def __pow__(self, other: float):
+        out = Value(self.data**other)
+        out._children = {self}
+        out._op = "**"
+        
+        def _backward():
+            self.grad += (other * self.data**(other-1)) * out.grad
+        out._backward = _backward
+        
+        return out
+    
+    def __truediv__(self, other):
+        out = self * (other**-1) 
+        return out
 
 class Neuron:
     """
