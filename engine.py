@@ -174,8 +174,8 @@ class MLP:
     def __init__(self, input_size: int, layer_sizes: list[int], learning_rate : float):
         self.learning_rate = learning_rate
         self.loss = Value(0.0) 
-        sizes = [input_size] + layer_sizes
-        self.layers = [Layer(sizes[i], sizes[i+1]) for i in range(len(layer_sizes))]
+        self.sizes = [input_size] + layer_sizes
+        self.layers = [Layer(self.sizes[i], self.sizes[i+1]) for i in range(len(layer_sizes))]
     
     def Get_params(self):
         params = []
@@ -200,7 +200,7 @@ class MLP:
         Dfs(root)
     
     def Train(self, input: list[Value], labels : list[Value], epochs):
-        if(len(input) != len(labels)) :
+        if(self.sizes[-1] != len(labels)) :
             raise ValueError("Input and labels must have the same length")
 
         for _ in range(epochs):
