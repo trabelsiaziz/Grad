@@ -85,7 +85,6 @@ class Value:
         return out 
     
 
-
 class Neuron:
     """
     provide the number of weights for the neuron 
@@ -113,7 +112,7 @@ class Layer:
     """
     provide the number of neurons and number of inputs of each neuron 
     """
-    def __init__(self, neuron_nbr: int, input_size: int):
+    def __init__(self, input_size: int, neuron_nbr: int):
          self.neurons = [Neuron(input_size=input_size) for _ in range(neuron_nbr)]
     
     def __repr__(self):
@@ -130,4 +129,62 @@ class Layer:
         for neuron in self.neurons : 
             out.extend(neuron.weights)
         return out 
+
+class MLP:
+    """
+    Multi-Layer Perceptron
+    """
+    def __init__(self, input_size: int, layer_sizes: list[int], learning_rate : float):
+        self.learning_rate = learning_rate
+        self.loss = Value(0.0) 
+        sizes = [input_size] + layer_sizes
+        self.layers = [Layer(sizes[i], sizes[i+1]) for i in range(len(layer_sizes))]
+    
+    def Get_params(self):
+        params = []
+        for layer in self.layers:
+            params.extend(layer.get_params())
+        return params
+    
+    def __repr__(self):
+        return f"MLP({self.layers})"
+    
+    
+    def Backprop(root : Value): 
+        """
+        backpropagation function 
+        """ 
+        def Dfs (node : Value): 
+            node._backward()
+            for child in node._children: 
+                Dfs(child)
+        
+        root.grad = 1.0        
+        Dfs(root)
+    
+    def Train(self, input: list[Value], labels : list[Value], epochs):
+        if(len(input) != len(labels)) :
+            raise ValueError("Input and labels must have the same length")
+
+        for _ in range(epochs):
+            prediction = input
+            for layer in self.layers:
+                prediction = layer(prediction)
+            
+            sum = Value(0.0)
+            for i in range(len(input)):
+                sum += (prediction[i] - labels[i])**2
+            self.loss = sum/Value(len(labels))
+            
+            params = self.Get_params()
+            # zero grad
+            for param in params: 
+                param.grad = 0.0
+            
+            MLP.Backprop(self.loss)
+            for param in params : 
+                param.data -= self.learning_rate * param.grad
+            
+            print(f"Loss for the {_}'th epoch is : {self.loss.data}")
+            
     
