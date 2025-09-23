@@ -111,8 +111,8 @@ import random
 x = [Value(random.uniform(-1,1)) for _ in range(2)]
 y = [Value(random.uniform(-1,1)) for _ in range(2)]
 
-# Create MLP: 2 inputs, hidden layer with 2 neurons, output layer with 3 neurons
-nn = MLP(input_size=2, layer_sizes=[2, 3], learning_rate=0.1)
+# Create MLP: 2 inputs, hidden layer with 2 neurons, output layer with 2 neurons
+nn = MLP(input_size=2, layer_sizes=[2, 2], learning_rate=0.1)
 
 # Train the network
 epochs = 10
